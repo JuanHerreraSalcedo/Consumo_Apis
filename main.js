@@ -1,5 +1,7 @@
 const API_URL_RANDOM = 'https://api.thecatapi.com/v1/images/search?limit=2&api_key=c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8';
 const API_URL_FAVORITES = 'https://api.thecatapi.com/v1/favourites?&api_key=c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8';
+const API_URL_FAVORITES_DELETE = (id) => `https://api.thecatapi.com/v1/favourites/${id}?&api_key=c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8`;
+
 
 const spanError = document.getElementById('Error')
 
@@ -34,8 +36,16 @@ async function loadFavouriteMichis() {
     if (res.status !== 200) {
         spanError.innerHTML = "Hubo un error: " + res.status + data.message;
     } else {
+        const section = document.getElementById('favoritesMichis');
+        
+        section.innerHTML = "";
+        const h2 = document.createElement("h2");
+        const h2Text = document.createTextNode("Michis favoritos");
+        h2.appendChild(h2Text);
+        section.appendChild(h2);
+
+
         data.forEach(michi => {
-            const section = document.getElementById('favoritesMichis');
             const article = document.createElement('article');
             const img = document.createElement('img');
             const btn = document.createElement('button');
@@ -44,6 +54,7 @@ async function loadFavouriteMichis() {
             img.src = michi.image.url
             img.width = 150;
             btn.appendChild(btnText);
+            btn.onclick = () => deleteFavouriteMichi(michi.id);
             article.appendChild(img);
             article.appendChild(btn);
             section.appendChild(article);
@@ -69,6 +80,26 @@ async function saveFavouriteMichi(id) {
 
     if (res.status !== 200) {
         spanError.innerHTML = "Hubo un error: " + res.status + data.message;
+    } else {
+        console.log('Michi guardado en favoritos')
+
+        loadFavouriteMichis();
+    }
+}
+
+async function deleteFavouriteMichi(id) {
+    const res = await fetch(API_URL_FAVORITES_DELETE(id), {
+        method: 'DELETE',
+    });
+
+    const data = await res.json();
+
+    if (res.status !== 200) {
+        spanError.innerHTML = "Hubo un error: " + res.status + data.message;
+    }else{
+        console.log('Michi eliminado de favoritos')
+        loadFavouriteMichis();
+
     }
 }
 loadRandomMichis();
