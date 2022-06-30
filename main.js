@@ -1,6 +1,12 @@
+const api = axios.create({
+    baseURL:'https://api.thecatapi.com/v1'
+});
+api.defaults.headers.common['X-API-KEY'] = 'c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8';
+
 const API_URL_RANDOM = 'https://api.thecatapi.com/v1/images/search?limit=2';
 const API_URL_FAVORITES = 'https://api.thecatapi.com/v1/favourites?';
 const API_URL_FAVORITES_DELETE = (id) => `https://api.thecatapi.com/v1/favourites/${id}?&api_key=c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8`;
+const API_URL_UPLOAD = 'https://api.thecatapi.com/v1/images/upload';
 
 
 const spanError = document.getElementById('Error')
@@ -68,24 +74,27 @@ async function loadFavouriteMichis() {
 }
 
 async function saveFavouriteMichi(id) {
-    const res = await fetch(API_URL_FAVORITES, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': 'c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8'
-        },
-        body: JSON.stringify({
-            image_id: id
-        }),
+    const {data, status} = await api.post('/favourites', {
+        image_id: id,
     });
+    // const res = await fetch(API_URL_FAVORITES, {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'X-API-Key': 'c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8'
+    //     },
+    //     body: JSON.stringify({
+    //         image_id: id
+    //     }),
+    // });
 
-    const data = await res.json();
+    // const data = await res.json();
 
     console.log('Save')
-    console.log(res)
+    //console.log(res)
 
-    if (res.status !== 200) {
-        spanError.innerHTML = "Hubo un error: " + res.status + data.message;
+    if (status !== 200) {
+        spanError.innerHTML = "Hubo un error: " + status + data.message;
     } else {
         console.log('Michi guardado en favoritos')
 
@@ -111,5 +120,34 @@ async function deleteFavouriteMichi(id) {
 
     }
 }
+
+async function uploadMichiPhoto() {
+const form = document.getElementById('uploadingForm')
+const formData = new FormData(form);
+
+console.log(formData.get('file'))
+
+const res = await fetch(API_URL_UPLOAD,{
+    method: 'POST',
+    headers: {
+        //'Content-Type': 'multipart/form-data',
+        'X-API-KEY': 'c4afcdf7-aa0d-4e2f-a0cd-35fd2769d5d8',
+    },
+    body: formData,
+})
+const data = await res.json();
+if (res.status !== 201){
+    spanError.innerHTML = "Hubo un error: " + res.status + data.message;
+    console.log({data})
+} else {
+    console.log('Foto de michi subida')
+    console.log({data})
+    console.log(data.url);
+    saveFavouriteMichi(data.id);
+}
+
+
+}
+
 loadRandomMichis();
 loadFavouriteMichis();
